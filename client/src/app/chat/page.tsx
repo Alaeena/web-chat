@@ -52,11 +52,11 @@ const Chat = () => {
       }
       conn.onmessage = (res) => {
          const m: Message = JSON.parse(res.data);
-         if (m.content == 'A new user has joined the room') {
+         if (m.content.includes('tham gia vào phòng')) {
             setUsers([...users, { username: m.username }]);
          }
 
-         if (m.content == 'user left the chat') {
+         if (m.content.includes('đã rời khỏi phòng')) {
             const deleteUser = users.filter((user) => user.username != m.username);
             setUsers([...deleteUser]);
             setMessage([...messages, m]);
@@ -89,14 +89,14 @@ const Chat = () => {
                <div className="flex w-full mr-4 rounded-md border border-blue">
                   <textarea
                      ref={textarea}
-                     placeholder="type your message here"
+                     placeholder="nhập tin nhắn ở đây"
                      className="w-full h-10 p-2 rounded-md focus:outline-none"
                      style={{ resize: 'none' }}
                   />
                </div>
                <div className="flex items-center">
                   <button className="p-2 rounded-md bg-blue text-white" onClick={sendMessage}>
-                     Send
+                     Gửi
                   </button>
                </div>
             </div>

@@ -21,6 +21,9 @@ function Home() {
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
+    if(!value){
+      return
+    }
     const success = await CreateRoom(value);
     if (success) {
       getRooms();

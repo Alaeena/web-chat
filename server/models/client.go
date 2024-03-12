@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"time"
@@ -39,7 +40,7 @@ func (client *Client) ReadMessage(hub *Hub) {
 		client.Conn.Close()
 		hub.Unregister <- client
 		hub.Broadcast <- &Message{
-			Content:  "User left the chat",
+			Content:  fmt.Sprintf("%v đã rời khỏi phòng", client.Username),
 			RoomID:   client.RoomID,
 			Username: client.Username,
 		}

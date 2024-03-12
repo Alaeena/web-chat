@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -68,7 +69,7 @@ func (controller *WebsocketController) JoinRoom(con *gin.Context) {
 	}
 
 	msg := &models.Message{
-		Content:  "A new user has joined the room",
+		Content:  fmt.Sprintf("%v tham gia vào phòng", client.Username),
 		RoomID:   roomID,
 		Username: username,
 	}
