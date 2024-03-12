@@ -1,0 +1,2 @@
+migration:
+	goose -dir .\db\schema\ postgres postgresql://postgres:123vanduc@localhost:5432/chat_app?sslmode=disable up
