@@ -1,25 +1,25 @@
 package utils
 
 import (
+	"errors"
 	"github.com/golang-jwt/jwt/v4"
-	"server/db/database"
 	"time"
 )
 
 const secretKey = "secret"
 
 type CustomClaims struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
+	ID    string `json:"id"`
+	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
-func CreateJwtToken(user database.User) (string, error) {
+func CreateJwtToken(userId string, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, CustomClaims{
-		ID:       string(user.ID),
-		Username: user.Username,
+		ID:    userId,
+		Email: email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    string(user.ID),
+			Issuer:    userId,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
 	})
@@ -28,4 +28,18 @@ func CreateJwtToken(user database.User) (string, error) {
 		return "", err
 	}
 	return accessToken, nil
+}
+
+func ParseToken(value string) (*CustomClaims, error) {
+	token, err := jwt.ParseWithClaims(value, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(*CustomClaims)
+	if !ok {
+		return nil, errors.New("unknown claims type, cannot proceed")
+	}
+	return claims, err
 }

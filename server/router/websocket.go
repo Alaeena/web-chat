@@ -2,15 +2,11 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"server/controllers"
-	"server/db/database"
-	"server/models"
+	"server/internal/websocket"
 )
 
-func WebsocketRoute(router *gin.RouterGroup, queries *database.Queries) {
-	hub := models.NewHub()
-	controller := controllers.GetWebsocket(&hub)
-	go hub.Run()
+func WebsocketRoute(router *gin.RouterGroup, hub *websocket.Hub) {
+	controller := websocket.GetController(hub)
 
 	//HTTP
 	router.GET("/", controller.GetRooms)

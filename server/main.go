@@ -2,13 +2,17 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"server/db"
+	"server/db/mongo"
+	"server/db/scylla"
 	"server/router"
 )
 
 func main() {
 	godotenv.Load()
 
-	db.Connect()
+	//postgres.Connect()
+	scylla.Connect()
+	mongo.Connect()
+
 	router.Listen()
 }

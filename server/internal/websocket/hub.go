@@ -1,4 +1,8 @@
-package models
+package websocket
+
+import (
+	"server/db/scylla/scylladb"
+)
 
 type Room struct {
 	ID      string             `json:"id"`
@@ -10,6 +14,7 @@ type Hub struct {
 	Register   chan *Client
 	Unregister chan *Client
 	Broadcast  chan *Message
+	Log        chan *scylladb.NewReportsParams
 }
 
 type CreateRoomReq struct {
@@ -25,17 +30,20 @@ type ClientRes struct {
 	Username string `json:"username"`
 }
 
-func NewHub() Hub {
-	return Hub{
+func NewHub() *Hub {
+	return &Hub{
 		Rooms:      make(map[string]*Room),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Broadcast:  make(chan *Message),
+		Log:        make(chan *scylladb.NewReportsParams),
 	}
 }
-func (hub *Hub) Run() {
+func (hub *Hub) Run(queries *scylladb.Queries) {
 	for {
 		select {
+		case item := <-hub.Log:
+			queries.NewReport(item)
 		case client := <-hub.Register:
 			room, exist := hub.Rooms[client.RoomID]
 			if exist {

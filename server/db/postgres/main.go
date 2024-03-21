@@ -1,14 +1,14 @@
-package db
+package postgres
 
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"log"
 	"os"
-	"server/db/database"
+	"server/db/postgres/postgresdb"
 )
 
-var client *database.Queries
+var queries *postgresdb.Queries
 
 func Connect() {
 	connStr := os.Getenv("DB_URL")
@@ -17,9 +17,9 @@ func Connect() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client = database.New(db)
+	queries = postgresdb.New(db)
 }
 
-func Client() *database.Queries {
-	return client
+func Queries() *postgresdb.Queries {
+	return queries
 }

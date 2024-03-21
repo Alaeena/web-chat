@@ -17,14 +17,11 @@ const Header = () => {
       return;
    }
    const handleClick = async () => {
-      const res = await LogoutUser();
-
-      if (res) {
-         setUser({ username: '', id: '' });
-         setLogin(false);
-         Storage.set({ username: '', id: '' });
-         router.push('/login');
-      }
+      LogoutUser();
+      setUser({ username: '', id: '' });
+      setLogin(false);
+      Storage.set({ username: '', id: '' });
+      router.push('/login');
    };
    const handleReturn = async () => {
       setConn(null);

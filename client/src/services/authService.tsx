@@ -6,6 +6,7 @@ import { Storage } from '@/utils';
 export const LoginUser = async (email: string, password: string): Promise<boolean> => {
    const res = await fetch(`${HOST_URL}/auth/login`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
    });
@@ -22,6 +23,7 @@ export const LoginUser = async (email: string, password: string): Promise<boolea
 export const RegisterUser = async (email: string, username: string, password: string): Promise<boolean> => {
    const res = await fetch(`${HOST_URL}/auth/register`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, username }),
    });
@@ -35,9 +37,10 @@ export const RegisterUser = async (email: string, username: string, password: st
    }
    return res.ok;
 };
-export const LogoutUser = async (): Promise<boolean> => {
-   const res = await fetch(`${HOST_URL}/auth/logout`, {
-      method: 'GET',
+export const LogoutUser = async () => {
+   await fetch(`${HOST_URL}/auth/logout`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
    });
-   return res.ok;
 };

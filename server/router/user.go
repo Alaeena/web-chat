@@ -2,17 +2,18 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"server/controllers"
-	"server/db/database"
-	"server/services"
+	"server/db/mongo/mongodb"
+	"server/internal/user"
+	"server/internal/websocket"
 )
 
-func AuthRoute(router *gin.RouterGroup, queries *database.Queries) {
-	service := services.GetUser(queries)
-	controller := controllers.GetUser(service)
+func AuthRoute(router *gin.RouterGroup, private *gin.RouterGroup, hub *websocket.Hub, queries *mongodb.Queries) {
+	service := user.GetMongoService(queries)
+	controller := user.GetMongoController(service, hub)
 
 	router.POST("/register", controller.Register)
 	router.POST("/login", controller.Login)
-	router.GET("/logout", controller.Logout)
 
+	private.GET("/", controller.Detail)
+	private.POST("/logout", controller.Logout)
 }

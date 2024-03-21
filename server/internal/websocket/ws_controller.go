@@ -1,4 +1,4 @@
-package controllers
+package websocket
 
 import (
 	"errors"
@@ -6,20 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"server/models"
 	"server/utils"
 )
 
-type WebsocketController struct {
-	hub *models.Hub
+type controller struct {
+	hub *Hub
 }
 
-func GetWebsocket(h *models.Hub) WebsocketController {
-	return WebsocketController{hub: h}
+func GetController(h *Hub) Controller {
+	return &controller{hub: h}
 }
 
-func (controller *WebsocketController) CreateRoom(con *gin.Context) {
-	var payload models.CreateRoomReq
+func (controller *controller) CreateRoom(con *gin.Context) {
+	var payload CreateRoomReq
 	err := con.ShouldBindJSON(&payload)
 
 	if err != nil {
@@ -33,10 +32,10 @@ func (controller *WebsocketController) CreateRoom(con *gin.Context) {
 		utils.RespondError(con, 400, errors.New("room id already exist"))
 		return
 	}
-	rooms[payload.ID] = &models.Room{
+	rooms[payload.ID] = &Room{
 		ID:      payload.ID,
 		Name:    payload.Name,
-		Clients: make(map[string]*models.Client),
+		Clients: make(map[string]*Client),
 	}
 	con.JSON(201, rooms[payload.ID])
 }
@@ -49,7 +48,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func (controller *WebsocketController) JoinRoom(con *gin.Context) {
+func (controller *controller) JoinRoom(con *gin.Context) {
 	conn, err := upgrader.Upgrade(con.Writer, con.Request, nil)
 
 	if err != nil {
@@ -60,15 +59,15 @@ func (controller *WebsocketController) JoinRoom(con *gin.Context) {
 	clientID := con.Query("userId")
 	username := con.Query("username")
 
-	client := &models.Client{
+	client := &Client{
 		ID:       clientID,
-		Message:  make(chan *models.Message, 10),
+		Message:  make(chan *Message, 10),
 		Username: username,
 		RoomID:   roomID,
 		Conn:     conn,
 	}
 
-	msg := &models.Message{
+	msg := &Message{
 		Content:  fmt.Sprintf("%v tham gia vào phòng", client.Username),
 		RoomID:   roomID,
 		Username: username,
@@ -81,29 +80,29 @@ func (controller *WebsocketController) JoinRoom(con *gin.Context) {
 	client.ReadMessage(controller.hub)
 }
 
-func (controller *WebsocketController) GetRooms(context *gin.Context) {
-	rooms := make([]models.RoomRes, 0)
+func (controller *controller) GetRooms(context *gin.Context) {
+	rooms := make([]RoomRes, 0)
 
 	for _, room := range controller.hub.Rooms {
-		rooms = append(rooms, models.RoomRes{
+		rooms = append(rooms, RoomRes{
 			ID:   room.ID,
 			Name: room.Name,
 		})
 	}
 	context.JSON(http.StatusOK, rooms)
 }
-func (controller *WebsocketController) GetClient(context *gin.Context) {
-	var clients []models.ClientRes
+func (controller *controller) GetClient(context *gin.Context) {
+	var clients []ClientRes
 	roomId := context.Param("roomId")
 	room, exist := controller.hub.Rooms[roomId]
 
 	if !exist {
-		clients = make([]models.ClientRes, 0)
+		clients = make([]ClientRes, 0)
 		context.JSON(200, clients)
 		return
 	}
 	for _, client := range room.Clients {
-		clients = append(clients, models.ClientRes{
+		clients = append(clients, ClientRes{
 			ID:       client.ID,
 			Username: client.Username,
 		})

@@ -4,7 +4,10 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"os"
-	"server/db"
+	"server/db/mongo"
+	"server/db/scylla"
+	"server/internal/websocket"
+	"server/middleware"
 	"time"
 )
 
@@ -24,15 +27,21 @@ func handleCORS(router *gin.Engine) {
 }
 func Listen() error {
 	router := gin.Default()
-	queries := db.Client()
 	port := os.Getenv("PORT")
 
+	scyllaQueries := scylla.Queries()
+	mongoQueries := mongo.Queries()
+	hub := websocket.NewHub()
+
+	go hub.Run(scyllaQueries)
 	handleCORS(router)
-	AuthRoute(router.Group("/auth"), queries)
-	WebsocketRoute(router.Group("/websocket"), queries)
+
+	private := router.Group("/auth", middleware.AuthHandler())
+	AuthRoute(router.Group("/auth"), private, hub, mongoQueries)
+	WebsocketRoute(router.Group("/websocket"), hub)
+
 	router.GET("/", func(context *gin.Context) {
 		context.JSON(200, gin.H{"message": "index page"})
 	})
-
 	return router.Run("localhost:" + port)
 }
